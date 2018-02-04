@@ -1,0 +1,11 @@
+<h2>Add a new item</h2>
+
+<form action="{% url 'todo:add' %}" method="post">
+  {% csrf_token %}
+  <div>
+  Description: <input type="text" name="description" id="description" value=""/><br/>
+  Due date: <input type="text" name="due_date" id="due_date" value="2017-12-31"/><br/>
+  <br/>
+</div>
+  <input type="submit" value="Add"/>
+</form>
