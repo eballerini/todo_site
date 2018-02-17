@@ -20,9 +20,13 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
+from todo_site import views
+
 urlpatterns = [
     url(r'^accounts/login/$', auth_views.login, name='login'),
-    url(r'^accounts/logout/$', auth_views.logout, {'next_page': '/accounts/login/?next=/todo/'}, name='logout'),
+    url(r'^accounts/logout/$', auth_views.logout, {'next_page': '/accounts/login/'}, name='logout'),
+    url(r'^home/$', views.home),
+    url(r'^login_redirect_alexa', views.login_redirect_alexa),
     url(r'^todo/', include('todo.urls')),
     path('admin/', admin.site.urls),
 ]

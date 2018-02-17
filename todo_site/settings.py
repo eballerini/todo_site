@@ -127,3 +127,5 @@ STATIC_URL = '/static/'
 AUTHENTICATION_BACKENDS = [
     'todo_site.auth.BackendAuthenticator',
 ]
+
+LOGIN_REDIRECT_URL = '/home/'
