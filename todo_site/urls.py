@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^accounts/logout/$', auth_views.logout, {'next_page': '/accounts/login/'}, name='logout'),
     url(r'^home/$', views.home),
     url(r'^login_redirect_alexa', views.login_redirect_alexa),
+    url(r'^privacy-policy', views.show_privacy_policy),
     url(r'^todo/', include('todo.urls')),
     path('admin/', admin.site.urls),
 ]

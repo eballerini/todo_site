@@ -9,6 +9,9 @@ from todo.models import AccessToken
 
 DEFAULT_HOME_URL = '/todo/'
 
+def show_privacy_policy(request):
+    return render(request, 'registration/privacy-policy.html', {})
+
 @login_required
 def login_redirect_alexa(request):
     print('>>> login_redirect_alexa')
