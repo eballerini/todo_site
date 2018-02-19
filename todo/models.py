@@ -10,3 +10,11 @@ class Item(models.Model):
     
     def __str__(self):
         return self.description
+
+class AccessToken(models.Model):
+    token = models.CharField(max_length=36)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    expiry_date = models.DateField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.token

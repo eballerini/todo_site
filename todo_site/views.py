@@ -1,7 +1,11 @@
+import uuid
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from django.http import HttpResponseRedirect
+
+from todo.models import AccessToken
 
 DEFAULT_HOME_URL = '/todo/'
 
@@ -27,12 +31,14 @@ def home(request):
         # https://pitangui.amazon.com/spa/skill/account-linking-status.html?vendorId=AAAAAAAAAAAAAA#state=xyz
         # &access_token=2YotnFZFEjr1zCsicMWpAA&token_type=Bearer
         #
-        access_token = get_access_token()
+        access_token = generate_and_save_access_token(request)
         redirect_uri = redirect_uri + '#state=' + state + '&token_type=Bearer&access_token=' + access_token
     
     print("final redirect_uri: {}".format(redirect_uri))
     return HttpResponseRedirect(redirect_uri)
 
-def get_access_token():
-    # TODO fix
-    return 'abc'
+def generate_and_save_access_token(request):
+    token = str(uuid.uuid4())
+    access_token = AccessToken(token=token, user=request.user)
+    access_token.save()
+    return token
