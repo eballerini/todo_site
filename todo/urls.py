@@ -13,6 +13,7 @@ app_name = 'todo'
 urlpatterns = [
     # ex: /todo/
     path('', views.index, name='index'),
+    # TODO add new endpoint for list of todos
     # ex: /todo/5/
     path('<int:item_id>/', views.detail, name='detail'),
     path('add/', views.add, name='add'),

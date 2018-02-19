@@ -36,3 +36,8 @@ def add(request):
     
     return render(request, 'todo/add.html', {})
     
+# TODO add endpoint for list of todos
+# no @login_required
+# must check accessToken and retrieve user based on that (is there a way to retrieve the user in the lambda's session?)
+# load items based on that user
+# return json
