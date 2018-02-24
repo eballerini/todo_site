@@ -10,6 +10,12 @@ class Item(models.Model):
     
     def __str__(self):
         return self.description
+        
+    def to_json(self):
+        return {
+            'description': self.description,
+            'completed': self.completed,
+        }
 
 class AccessToken(models.Model):
     token = models.CharField(max_length=36)

@@ -17,6 +17,7 @@ urlpatterns = [
     # ex: /todo/5/
     path('<int:item_id>/', views.detail, name='detail'),
     path('add/', views.add, name='add'),
+    path('list', views.get_items_list, name='get_items_list')
     # ex: /polls/5/results/
     # path('<int:question_id>/results/', views.results, name='results'),
     # ex: /polls/5/vote/

@@ -2,9 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 
 # Create your views here.
-from django.http import HttpResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.template import loader
-from .models import Item
+from .models import AccessToken, Item
 
 @login_required
 def index(request):
@@ -36,8 +36,23 @@ def add(request):
     
     return render(request, 'todo/add.html', {})
     
-# TODO add endpoint for list of todos
-# no @login_required
 # must check accessToken and retrieve user based on that (is there a way to retrieve the user in the lambda's session?)
 # load items based on that user
 # return json
+def get_items_list(request):
+    access_token = request.GET.get('access_token')
+    if not access_token:
+        raise Http404
+        
+    # TODO check for expiry date
+    access_token = get_object_or_404(AccessToken, token=access_token)
+    latest_item_list = Item.objects.filter(owner=access_token.user).order_by('-due_date')
+    
+    data = {}
+    items = []
+    for item in latest_item_list:
+        items.append(item.to_json())
+    
+    data['items'] = items
+    
+    return JsonResponse(data)
