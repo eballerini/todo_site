@@ -1,3 +1,6 @@
+import json
+
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 
@@ -36,16 +39,27 @@ def add(request):
     
     return render(request, 'todo/add.html', {})
     
-# must check accessToken and retrieve user based on that (is there a way to retrieve the user in the lambda's session?)
-# load items based on that user
-# return json
-def get_items_list(request):
+def _get_access_token(request):
     access_token = request.GET.get('access_token')
     if not access_token:
         raise Http404
         
     # TODO check for expiry date
     access_token = get_object_or_404(AccessToken, token=access_token)
+    return access_token
+    
+# must check accessToken and retrieve user based on that (is there a way to retrieve the user in the lambda's session?)
+# load items based on that user
+# return json
+# should maybe protect this with the alexa skill id as well
+def get_items_list(request):
+    # access_token = request.GET.get('access_token')
+    # if not access_token:
+    #     raise Http404
+    #     
+    # # TODO check for expiry date
+    # access_token = get_object_or_404(AccessToken, token=access_token)
+    access_token = _get_access_token(request)
     latest_item_list = Item.objects.filter(owner=access_token.user).order_by('-due_date')
     
     data = {}
@@ -56,3 +70,23 @@ def get_items_list(request):
     data['items'] = items
     
     return JsonResponse(data)
+    
+# TODO probably not the right thing to do
+# TODO  csrf_exempt needed with Alexa?
+# should maybe protect this with the alexa skill id as well
+@csrf_exempt
+def add_item_to_list(request):
+    print('add_item_to_list...')
+    print('request: {}'.format(request.body))
+    access_token = _get_access_token(request)
+    data = json.loads(request.body.decode('utf-8'))
+    description = data.get('description')
+    print('description: {}'.format(description))
+    item = Item(description=description, due_date=None, owner=access_token.user)
+    item.save()
+    print('item saved')
+    
+    return HttpResponse(status=204)
+    
+    # curl -H "Content-Type: application/json" -X POST -d '{"description":"repair coffee machine"}' http://localhost:8000/todo/add_item?access_token=abc
+    
