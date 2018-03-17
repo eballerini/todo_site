@@ -47,7 +47,9 @@ def _get_access_token(request):
     # TODO check for expiry date
     access_token = get_object_or_404(AccessToken, token=access_token)
     return access_token
-    
+
+# test with
+# curl -X GET http://localhost:8000/todo/list?access_token=abc
 # must check accessToken and retrieve user based on that (is there a way to retrieve the user in the lambda's session?)
 # load items based on that user
 # return json
@@ -71,6 +73,8 @@ def get_items_list(request):
     
     return JsonResponse(data)
     
+# test with
+# curl -H "Content-Type: application/json" -X POST -d '{"description":"repair coffee machine"}' http://localhost:8000/todo/add_item?access_token=abc
 # TODO probably not the right thing to do
 # TODO  csrf_exempt needed with Alexa?
 # should maybe protect this with the alexa skill id as well
@@ -85,8 +89,17 @@ def add_item_to_list(request):
     item = Item(description=description, due_date=None, owner=access_token.user)
     item.save()
     print('item saved')
-    
+
     return HttpResponse(status=204)
     
-    # curl -H "Content-Type: application/json" -X POST -d '{"description":"repair coffee machine"}' http://localhost:8000/todo/add_item?access_token=abc
-    
+# test with
+# curl -H Content-Type: application/json -X POST  http://localhost:8000/todo/clear_list?access_token=abc
+@csrf_exempt
+def clear_list(request):
+    print('clear_list...')
+    print('request: {}'.format(request.body))
+    access_token = _get_access_token(request)
+    Item.objects.filter(owner=access_token.user).delete()
+    print('items deleted')
+
+    return HttpResponse(status=204)
