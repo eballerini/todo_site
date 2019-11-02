@@ -1,0 +1,84 @@
+How to deploy an app to AWS (old way)
+
+. Launch instance. Make sure to configure security group so that port 8000 is open
+. SSH into it
+. Update yum: $ sudo yum update
+. Install git: $ sudo yum install git
+. Install python 3: sudo yum install python36 
+If that does not work, do
+$ sudo yum list | grep python3
+And install whatever is avalable
+. Create a virtual env with python3
+$ mkdir ~/.virtualenv
+$ virtualenv -p python3 ~/.virtualenv/myapp
+. Activate it
+$ source ~/.virtualenv/myapp/bin/activate
+. Install dependencies
+$ pip install -r requirements
+. Start the app
+$ ./start.sh
+
+To start Django with HTTPS support:
+https://stackoverflow.com/questions/8023126/how-can-i-test-https-connections-with-django-as-easily-as-i-can-non-https-connec
+ https://django-extensions.readthedocs.io/en/latest/runserver_plus.html
+$ cat requirements.txt
+Django==2.0.2
+gunicorn==19.7.1
+django-extensions==1.9.9
+pyOpenSSL==17.5.0
+Werkzeug==0.14.1
+
+Start with 
+$ python manage.py runserver_plus --cert-file tmp-cert.crt 0.0.0.0:8000
+
+With docker
+Locally, to build the image:
+$ docker build -t eballerini/todo_site .
+
+Push the image
+$ docker push image eballerini/todo_site
+
+Run a container with this image (works in AWS too)
+$ docker rm todo; docker container run  --name todo -p 8000:8000 eballerini/todo_site
+
+How to deploy the todo list app (new way):
+. Launch instance. Make sure to configure security group so that port 8000 is open (inbound TCP rule)
+. SSH into it using the command on the popup after clicking "Connect" in the admin console
+. Install Docker on an EC2 instance: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html
+$ sudo yum update -y; sudo yum install -y docker; sudo service docker start; sudo usermod -a -G docker ec2-user
+# Log out and log back in again to pick up the new docker group permissions. Run the following command to make sure the permission are ok
+$ docker info
+. Start the app based on the Docker image
+$ docker rm todo; docker container run  --name todo -p 8000:8000 eballerini/todo_site
+. Go to the admin console and copy the domain name
+. Update the Authorization URI in the account linking section of the Alexa skill using the domain name. It should look like something like https://ec2-34-203-214-254.compute-1.amazonaws.com:8000/accounts/login/
+. Update the DOMAIN env in the lambda function using the domain name. This is necessary for the lambda function to make requests on the instance deployed on EC2
+. In the Alexa companion app, disable the skill and reenable it. It will ask you to log in. Use "john" / <anything> to log in. This will do the account linking.
+. To connect to the site, go to https://ec2-34-203-214-254.compute-1.amazonaws.com:8000/home it should open the login page. Enter admin / admin
+
+---
+
+Alexa skill
+
+Intent: what a user may want to do (eg. book a flight). Utterance is what a user might say ("I want to book a flight")
+Intent may use a slot (eg. destination), which has a type. It can be built-in or custom.
+A slot has value (eg. for a DestinationType slot, values could be LAX or NYC). Synonyms can be added.
+Intent may require confirmation (eg. for booking a flight which means charging a credit card)
+
+Device -> Alexa skill -> HTTPS endpoint or lambda function -> service
+
+Account linking: requires login page with special characteristics
+
+How to design in Wave
+ - connect echo dot to network
+ - create skill (overdue invoices, send reminders?)
+ - add skill in dev mode to phone on Alexa companion app, which is logged in to a particular Amazon account (mine?)
+ - skill sends requests to lambda function based off of the alexa-skills-kit-color-expert-python blue print
+ - lambda function figures out which intent it is and calls the relevant endpoint. It sends the response (ie. the text) to the device
+
+Open questions / challenges:
+ - connect lambda to staging environment. Is it accessible through the internet?
+ - login page requirement?
+ 
+ ---
+ 
